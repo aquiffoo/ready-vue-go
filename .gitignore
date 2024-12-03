@@ -1,0 +1,6 @@
+vue-frontend/.DS_Store
+vue-frontend/node_modules
+vue-frontend/dist
+vue-frontend/package-lock.json
+vue-frontend/yarn.lock
+
