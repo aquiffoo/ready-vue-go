@@ -82,6 +82,7 @@ func main() {
 	http.HandleFunc("/message", handleMessage)
 	http.HandleFunc("/messages", handleGetMessages)
 
+
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:8081"},
 		AllowedMethods: []string{"GET", "POST", "OPTIONS"},

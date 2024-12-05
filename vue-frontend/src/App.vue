@@ -12,8 +12,12 @@
 		</div>
 
 		<div v-if="username">
-			<div class="chat-w">
-				<div v-for="(msg, index) in messages" :key="index" class="message">
+			<div class="chat-w" ref="chatWindow">
+				<div
+					v-for="(msg, index) in messages"
+					:key="index"
+					class="message"
+				>
 					<p><strong>{{ msg.sender }}:</strong> {{ msg.message }}</p>
 				</div>
 			</div>
@@ -24,6 +28,9 @@
 				@keyup.enter="sendMessage"
 			/>
 			<button @click="sendMessage">Send</button>
+			<div v-if="typingUsers && typingUsers.length > 0" class="typing-indicator">
+				<p v-for="user in typingUsers" :key="user">{{ user }} is typing...</p>
+			</div>
 		</div>
 	</div>
 </template>
@@ -36,6 +43,7 @@ export default {
 			newUsername: "",
 			message: "",
 			messages: [],
+			isTyping: false,
 		};
 	},
 	methods: {
@@ -77,7 +85,9 @@ export default {
 
 					if (response.ok) {
 						this.message = "";
-						this.fetchMessages();
+						await this.fetchMessages();
+						this.scrollToLastMessage();
+						await this.updateTypingStatus(false);
 					} else {
 						console.error("Failed to send message");
 					}
@@ -91,15 +101,34 @@ export default {
 				const response = await fetch("http://localhost:8080/messages");
 				const messages = await response.json();
 				this.messages = messages;
+				this.scrollToLastMessage();
 			} catch (error) {
 				console.error("Error fetching messages:", error);
 			}
 		},
+		scrollToLastMessage() {
+			this.$nextTick(() => {
+				const chatWindow = this.$refs.chatWindow;
+				if (chatWindow) {
+					chatWindow.scrollTop = chatWindow.scrollHeight;
+				}
+			});
+		},
+	},
+	watch: {
+		message(newVal, oldVal) {
+			if (newVal && !oldVal) {
+				this.isTyping = true; 
+			} else if (!newVal && oldVal) {
+				this.isTyping = false;
+			}
+		},
 	},
 	mounted() {
-			this.fetchMessages();
-			setInterval(this.fetchMessages, 5000);
-		},
+		this.fetchMessages();
+		setInterval(this.fetchMessages, 100);
+		setInterval(this.fetchTypingUsers, 100);
+	},
 };
 </script>
 
@@ -108,11 +137,12 @@ export default {
 
 * {
 	font-family: 'IBM Plex Sans', monospace;
+	font-size: 2rem;
 }
 
 .chat-w {
 	width: 500px;
-	height: 400px;
+	height: 700px;
 	border: 1px solid #ccc;
 	overflow-y: auto;
 }
@@ -141,6 +171,15 @@ button {
 	color: #fff;
 	cursor: pointer;
 }
+
+.typing-indicator p {
+	margin: 0;
+	padding: 5px;
+	color: #555;
+	font-style: italic;
+	font-size: 1.5rem;
+}
+
 
 input {
     margin-bottom: 10px;

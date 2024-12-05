@@ -12,6 +12,6 @@ $ ls
 ```
 
 ## how to run:
-1. run the go backend with `go run main.go`
-2. run the vue frontend with `npm run serve`
+1. run the go backend first with `go run main.go`
+2. then, you have to run the vue frontend with `npm run serve`
 3. you can open it in multiple windows to simulate multiple users
